@@ -10,6 +10,7 @@ import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.littleshoot.proxy.extras.SelfSignedMitmManager;
+import org.littleshoot.proxy.extras.SelfSignedMitmManagerAdvanced;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.littleshoot.proxy.impl.ProxyUtils;
 import org.slf4j.Logger;
@@ -34,6 +35,8 @@ public class Launcher {
 
     private static final String OPTION_MITM = "mitm";
 
+    private static final String OPTION_MITM_ADVANCED = "mitma";
+
     private static final String OPTION_NIC = "nic";
 
     /**
@@ -53,7 +56,8 @@ public class Launcher {
         options.addOption(null, OPTION_HELP, false,
                 "Display command line help.");
         options.addOption(null, OPTION_MITM, false, "Run as man in the middle.");
-        
+        options.addOption(null, OPTION_MITM_ADVANCED, false, "Run as man in the middle.");
+
         final CommandLineParser parser = new PosixParser();
         final CommandLine cmd;
         try {
@@ -101,6 +105,11 @@ public class Launcher {
         if (cmd.hasOption(OPTION_MITM)) {
             LOG.info("Running as Man in the Middle");
             bootstrap.withManInTheMiddle(new SelfSignedMitmManager());
+        }
+
+        if (cmd.hasOption(OPTION_MITM_ADVANCED)) {
+            LOG.info("Running as Man in the Middle");
+            bootstrap.withManInTheMiddle(new SelfSignedMitmManagerAdvanced());
         }
         
         if (cmd.hasOption(OPTION_DNSSEC)) {
