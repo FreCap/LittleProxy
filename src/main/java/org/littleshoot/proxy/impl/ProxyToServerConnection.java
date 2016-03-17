@@ -569,14 +569,14 @@ public class ProxyToServerConnection extends ProxyConnection<HttpResponse> {
                             .serverSslEngine(parsedHostAndPort.getHostText(),
                                     parsedHostAndPort.getPort())));
                 } else {
-                    connectionFlow.then(serverConnection.EncryptChannel(proxyServer.getMitmManager()
+                    connectionFlow.then(clientConnection.EncryptChannel(proxyServer.getMitmManager()
                             .serverSslEngine(remoteAddress.getHostName(),
                                     remoteAddress.getPort())));
                 }
-
+                connectionFlow.then(serverConnection.StartTunneling);
                 connectionFlow
                         .then(clientConnection.RespondCONNECTSuccessful)
-                        .then(serverConnection.MitmEncryptClientChannel);
+                        .then(clientConnection.MitmEncryptClientChannel);
             } else {
                 connectionFlow.then(serverConnection.StartTunneling)
                         .then(clientConnection.RespondCONNECTSuccessful)

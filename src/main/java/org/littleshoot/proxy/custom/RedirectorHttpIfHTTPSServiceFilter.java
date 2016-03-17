@@ -1,6 +1,5 @@
 package org.littleshoot.proxy.custom;
 
-import com.google.common.net.HostAndPort;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,25 +9,24 @@ import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 import org.littleshoot.proxy.impl.ProxyUtils;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by fre on 3/15/16.
  */
-public class RedirectorHttpFilter extends HttpFiltersSourceAdapter {
+public class RedirectorHttpIfHTTPSServiceFilter extends HttpFiltersSourceAdapter {
 
-    public RedirectorHttpFilter() {
+    public RedirectorHttpIfHTTPSServiceFilter() {
         System.out.println("Started");
     }
 
     public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
         return new HttpFiltersAdapter(originalRequest) {
-
-
             @Override
-            public HttpResponse proxyToServerRequest(HttpObject httpObject) {
-                httpTohttpsRedirector(httpObject);
+            public HttpResponse clientToProxyRequest(HttpObject httpObject) {
+                HttpResponse response = httpTohttpsRedirector(httpObject);
+                if (response != null) return response;
+
                 return null;
             }
 
@@ -36,11 +34,6 @@ public class RedirectorHttpFilter extends HttpFiltersSourceAdapter {
             public HttpObject serverToProxyResponse(HttpObject httpObject) {
                 // TODO: implement your filtering here
                 return httpObject;
-            }
-
-            @Override
-            public InetSocketAddress proxyToServerResolutionStarted(String resolvingServerHostAndPort) {
-                return new InetSocketAddress(HostAndPort.fromString(resolvingServerHostAndPort).getHostText(), 80);
             }
         };
     }
@@ -52,16 +45,15 @@ public class RedirectorHttpFilter extends HttpFiltersSourceAdapter {
     }
 
 
+
     //############################ REDIRECTOR ################################
-    HttpRequest httpTohttpsRedirector(HttpObject httpObject) {
+    HttpResponse httpTohttpsRedirector(HttpObject httpObject) {
         if (httpObject instanceof HttpRequest) {
             HttpRequest httpRequest = (HttpRequest) httpObject;
-            if (ProxyUtils.isCONNECT(httpObject)) {
-
-                if (getLengthURI("https://" + httpRequest.getUri()) == 0) {
-                    System.out.println("to HTTP changed " + httpRequest.getUri());
-
-//                    httpRequest.setUri(httpRequest.getUri().replace("https://", "http://"));
+            if (ProxyUtils.isGET(httpObject)) {
+                if (hasSamePageHTTPandHTTPS(httpRequest.getUri())) {
+                    System.out.println(httpRequest.getUri());
+                    return redirectRequest(httpRequest.getUri(), true);
                 }
             }
         }

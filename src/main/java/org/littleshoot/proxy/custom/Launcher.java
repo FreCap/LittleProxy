@@ -4,6 +4,7 @@ import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.littleshoot.proxy.HttpProxyServerBootstrap;
+import org.littleshoot.proxy.extras.SelfSignedMitmManagerAdvanced;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +90,8 @@ public class Launcher {
 
         // CUSTOM
 
-        bootstrap.withFiltersSource(new RedirectorHttpFilter());
+        bootstrap.withFiltersSource(new RedirectorHttpFilter())
+                .withManInTheMiddle(new SelfSignedMitmManagerAdvanced());
 
         //
 
